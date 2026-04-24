@@ -6,26 +6,232 @@
 <title>Programma AIUCD</title>
 
 <style>
-body { font-family: Arial, sans-serif; margin:0; background:#f5f6fa; }
-.wrap { max-width:1100px; margin:auto; padding:20px; }
-
-.block { background:white; margin-bottom:16px; border-radius:12px; padding:16px; box-shadow:0 6px 20px rgba(0,0,0,0.05);}
-.time { font-weight:bold; }
-.room { margin-top:10px; border-top:1px solid #eee; padding-top:10px; }
-.talk { margin-bottom:10px; }
-.code { font-weight:bold; color:#2047d2; }
-.title { font-weight:600; }
-.authors { color:#666; font-size:14px; }
-.day { margin-top:30px; }
-h2 { margin-bottom:10px; }
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  background: #f5f6fa;
+  color: #1d2433;
+}
+.wrap {
+  max-width: 1200px;
+  margin: auto;
+  padding: 20px;
+}
+.day {
+  margin-top: 28px;
+}
+.day h2 {
+  margin: 0 0 14px;
+  font-size: 28px;
+}
+.block {
+  background: white;
+  margin-bottom: 16px;
+  border-radius: 18px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.05);
+  overflow: hidden;
+}
+.block-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+  padding: 18px 20px;
+  border-bottom: 1px solid #e6e9f0;
+}
+.time {
+  font-weight: 700;
+  white-space: nowrap;
+}
+.type {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #2047d2;
+  background: #edf2ff;
+  border-radius: 999px;
+  padding: 6px 10px;
+}
+.type.break {
+  background: #fff5e7;
+  color: #8f5b00;
+}
+.type.plenary {
+  background: #ebf9f1;
+  color: #0a7d48;
+}
+.type.social {
+  background: #f4efff;
+  color: #6943d0;
+}
+.block-title {
+  margin: 10px 0 0;
+  font-size: 22px;
+  line-height: 1.25;
+}
+.parallel {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 14px;
+  padding: 18px 20px 20px;
+}
+.room-card {
+  border: 1px solid #e6e9f0;
+  border-radius: 16px;
+  padding: 14px;
+  background: #fcfdff;
+}
+.room-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  align-items: baseline;
+  margin-bottom: 10px;
+}
+.room-name {
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: #677089;
+  font-weight: 700;
+}
+.session-code {
+  font-size: 13px;
+  font-weight: 800;
+  color: #2047d2;
+}
+.session-title {
+  margin: 0 0 12px;
+  font-size: 18px;
+  line-height: 1.3;
+}
+.talks {
+  display: grid;
+  gap: 10px;
+}
+.talk {
+  border-top: 1px dashed #dfe4ee;
+  padding-top: 10px;
+}
+.talk:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+.talk-time {
+  font-size: 12px;
+  color: #677089;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.talk-code {
+  font-size: 12px;
+  color: #2047d2;
+  font-weight: 800;
+  margin-bottom: 4px;
+}
+.talk-title {
+  font-weight: 700;
+  line-height: 1.35;
+  margin-bottom: 4px;
+}
+.talk-authors {
+  color: #677089;
+  font-size: 14px;
+  line-height: 1.4;
+}
+.loading, .error {
+  background: #fff;
+  border: 1px solid #e6e9f0;
+  border-radius: 20px;
+  padding: 18px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.05);
+  color: #677089;
+}
+.toolbar {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+.lang-toggle {
+  display: flex;
+  gap: 8px;
+}
+.lang-toggle button {
+  appearance: none;
+  border: 1px solid #dfe4ee;
+  background: #fff;
+  color: #1d2433;
+  border-radius: 999px;
+  padding: 10px 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.lang-toggle button.active {
+  background: #2047d2;
+  border-color: #2047d2;
+  color: #fff;
+}
+.note {
+  color: #677089;
+  font-size: 14px;
+}
+@media (max-width: 860px) {
+  .block-head {
+    flex-direction: column;
+  }
+}
 </style>
 </head>
 
 <body>
-<div class="wrap" id="app">Caricamento...</div>
+<div class="wrap">
+  <div class="toolbar">
+    <h1 id="pageTitle">Programma AIUCD Cagliari 2026</h1>
+    <div class="lang-toggle">
+      <button id="btn-it" class="active">IT</button>
+      <button id="btn-en">EN</button>
+    </div>
+  </div>
+  <div id="app" class="loading">Caricamento...</div>
+</div>
 
 <script>
 const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRHVLopLKXErqwt8YOQBbUOTcYa7xNH7HmyT85pZpgQPQ88V7eYZFEY5IQ8T7uxMBH_dHsIF3wULWyY/pub?gid=352682787&single=true&output=csv";
+
+let currentLang = "it";
+
+const UI = {
+  it: {
+    title: "Programma AIUCD Cagliari 2026",
+    loading: "Caricamento...",
+    error: "Errore nel caricamento del programma.",
+    session: "Sessione",
+    break: "Pausa",
+    plenary: "Plenaria",
+    social: "Evento sociale",
+    discussion: "Dibattito",
+    room: "Aula"
+  },
+  en: {
+    title: "AIUCD Cagliari 2026 Programme",
+    loading: "Loading...",
+    error: "Error while loading the programme.",
+    session: "Session",
+    break: "Break",
+    plenary: "Plenary",
+    social: "Social event",
+    discussion: "Discussion",
+    room: "Room"
+  }
+};
+
+function t(key) {
+  return UI[currentLang][key] || key;
+}
 
 function parseCsv(text) {
   const rows = [];
@@ -66,94 +272,282 @@ function parseCsv(text) {
   return rows.map(r => r.map(c => (c || "").trim()));
 }
 
+function clean(v) {
+  return (v || "")
+    .replace(/\u00a0/g, " ")
+    .replace(/[ \t]+/g, " ")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
+function compact(v) {
+  return clean(v).replace(/\n+/g, " ").replace(/\s{2,}/g, " ").trim();
+}
+
+function isDateCell(v) {
+  return /^\d{2}\/\d{2}\/\d{4}$/.test(compact(v));
+}
+
+function normalizeTime(v) {
+  const s = compact(v);
+  if (!s) return "";
+  let m = s.match(/^(\d{1,2}:\d{2})\s*[-–]\s*(\d{1,2}:\d{2})$/);
+  if (m) return `${m[1]}–${m[2]}`;
+  m = s.match(/^(\d{1,2}:\d{2}):(\d{1,2}:\d{2})$/);
+  if (m) return `${m[1]}–${m[2]}`;
+  return s;
+}
+
+function isSessionCode(v) {
+  return /^\d+[A-Z]$/i.test(compact(v));
+}
+
+function isTalkCode(v) {
+  return /^\d+$/.test(compact(v));
+}
+
+function isChair(v) {
+  return /^chair$/i.test(compact(v));
+}
+
+function isDiscussion(v) {
+  return /^dibattito$/i.test(compact(v));
+}
+
 function splitTitleAuthors(value) {
-  const raw = (value || "").trim();
+  const raw = clean(value);
   if (!raw) return { title: "", authors: "" };
 
-  const parts = raw.split("|");
-  return {
-    title: (parts[0] || "").trim(),
-    authors: parts.slice(1).join("|").trim()
-  };
+  const pipeIndex = raw.indexOf("|");
+  if (pipeIndex >= 0) {
+    return {
+      title: clean(raw.slice(0, pipeIndex)),
+      authors: clean(raw.slice(pipeIndex + 1))
+    };
+  }
+
+  const lines = raw.split("\n").map(s => s.trim()).filter(Boolean);
+  if (lines.length >= 2) {
+    return {
+      title: lines[0],
+      authors: lines.slice(1).join("\n")
+    };
+  }
+
+  return { title: raw, authors: "" };
+}
+
+function formatDate(dateStr) {
+  const [dd, mm, yyyy] = dateStr.split("/").map(Number);
+  const d = new Date(yyyy, mm - 1, dd);
+  return new Intl.DateTimeFormat(currentLang === "it" ? "it-IT" : "en-GB", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric"
+  }).format(d);
+}
+
+function classifyGeneral(title) {
+  const s = compact(title).toLowerCase();
+  if (/pausa|pranzo|caff[eè]|coffee|lunch/.test(s)) return "break";
+  if (/cena sociale|social dinner/.test(s)) return "social";
+  return "plenary";
+}
+
+function make(tag, cls, html = "") {
+  const el = document.createElement(tag);
+  if (cls) el.className = cls;
+  if (html) el.innerHTML = html;
+  return el;
+}
+
+function typeLabel(type) {
+  if (type === "break") return t("break");
+  if (type === "social") return t("social");
+  if (type === "plenary") return t("plenary");
+  return t("session");
 }
 
 async function load() {
-  const res = await fetch(CSV_URL + "&t=" + Date.now());
-  const text = await res.text();
-  const rows = parseCsv(text);
-
   const app = document.getElementById("app");
-  app.innerHTML = "";
+  app.className = "loading";
+  app.textContent = t("loading");
 
-  let currentBlock = null;
+  try {
+    const res = await fetch(CSV_URL + "&t=" + Date.now(), { cache: "no-store" });
+    const text = await res.text();
+    const rows = parseCsv(text);
 
-  rows.forEach(r => {
-    const date = (r[0] || "").trim();
-    const time = (r[1] || "").trim();
-    const general = (r[2] || "").trim();
+    app.className = "";
+    app.innerHTML = "";
 
-    if (date.match(/^\d{2}\/\d{2}\/\d{4}$/)) {
-      const dayDiv = document.createElement("div");
-      dayDiv.className = "day";
-      dayDiv.innerHTML = "<h2>" + date + "</h2>";
-      app.appendChild(dayDiv);
-    }
+    let currentDayWrap = null;
+    let currentParallel = null;
 
-    if (general && !r.slice(3).join("").trim()) {
-      const block = document.createElement("div");
-      block.className = "block";
-      block.innerHTML = `<div class="time">${time}</div><div>${general}</div>`;
-      app.appendChild(block);
-      currentBlock = null;
-      return;
-    }
+    for (const r of rows) {
+      if (!r.some(cell => compact(cell))) continue;
 
-    if ((r[3] || "").trim().match(/^\d+[A-Z]$/)) {
-      const block = document.createElement("div");
-      block.className = "block";
-      block.innerHTML = `<div class="time">${time}</div>`;
-      currentBlock = block;
-      app.appendChild(block);
+      const date = compact(r[0] || "");
+      const time = normalizeTime(r[1] || "");
+      const general = clean(r[2] || "");
 
-      for (let i = 3; i < r.length; i += 2) {
-        const code = (r[i] || "").trim();
-        const title = (r[i + 1] || "").trim();
+      if (isDateCell(date)) {
+        currentDayWrap = make("section", "day");
+        currentDayWrap.appendChild(make("h2", "", formatDate(date)));
+        app.appendChild(currentDayWrap);
+        currentParallel = null;
 
-        if (!code || !title) continue;
-        if (!code.match(/^\d+[A-Z]$/)) continue;
-
-        const room = document.createElement("div");
-        room.className = "room";
-        room.innerHTML = `<div class="code">${code}</div><div class="title">${title}</div>`;
-        block.appendChild(room);
+        if (general && !r.slice(3).some(cell => compact(cell))) {
+          const type = classifyGeneral(general);
+          const block = make("div", "block");
+          block.innerHTML = `
+            <div class="block-head">
+              <div>
+                <div class="type ${type}">${typeLabel(type)}</div>
+                <h3 class="block-title">${general}</h3>
+              </div>
+              <div class="time">${time}</div>
+            </div>
+          `;
+          currentDayWrap.appendChild(block);
+        }
+        continue;
       }
-      return;
-    }
 
-    if (currentBlock) {
-      for (let i = 3; i < r.length; i += 2) {
-        const code = (r[i] || "").trim();
-        const cell = (r[i + 1] || "").trim();
+      if (!currentDayWrap) continue;
 
-        if (!cell) continue;
-        if (/^chair$/i.test(cell)) continue;
+      const tailHasContent = r.slice(3).some(cell => compact(cell));
 
-        const parsed = splitTitleAuthors(cell);
+      if (general && !tailHasContent) {
+        currentParallel = null;
+        const type = classifyGeneral(general);
+        const block = make("div", "block");
+        block.innerHTML = `
+          <div class="block-head">
+            <div>
+              <div class="type ${type}">${typeLabel(type)}</div>
+              <h3 class="block-title">${general}</h3>
+            </div>
+            <div class="time">${time}</div>
+          </div>
+        `;
+        currentDayWrap.appendChild(block);
+        continue;
+      }
 
-        const talk = document.createElement("div");
-        talk.className = "talk";
-        talk.innerHTML = `
-          <div class="time">${time}</div>
-          ${code && /^\d+$/.test(code) ? `<div class="code">#${code}</div>` : ""}
-          <div class="title">${parsed.title}</div>
-          ${parsed.authors ? `<div class="authors">${parsed.authors}</div>` : ""}
+      const chairOnly = r.slice(3).every((cell, idx) => {
+        if (idx % 2 === 0) return !compact(cell);
+        return !compact(cell) || isChair(cell);
+      });
+      if (chairOnly) continue;
+
+      const startsParallel = (() => {
+        for (let i = 3; i < r.length; i += 2) {
+          if (isSessionCode(r[i])) return true;
+        }
+        return false;
+      })();
+
+      if (startsParallel) {
+        currentParallel = { rooms: [] };
+
+        const block = make("div", "block");
+        block.innerHTML = `
+          <div class="block-head">
+            <div>
+              <div class="type">${t("session")}</div>
+              <h3 class="block-title">${currentLang === "it" ? "Sessioni parallele" : "Parallel sessions"}</h3>
+            </div>
+            <div class="time">${time}</div>
+          </div>
         `;
 
-        currentBlock.appendChild(talk);
+        const parallelGrid = make("div", "parallel");
+        block.appendChild(parallelGrid);
+
+        for (let i = 3, roomIndex = 1; i < r.length; i += 2, roomIndex++) {
+          const sessionCode = compact(r[i] || "");
+          const sessionTitle = clean(r[i + 1] || "");
+          if (!sessionCode || !sessionTitle || !isSessionCode(sessionCode)) continue;
+
+          const roomCard = make("article", "room-card");
+          roomCard.innerHTML = `
+            <div class="room-meta">
+              <div class="room-name">${t("room")} ${roomIndex}</div>
+              <div class="session-code">${sessionCode}</div>
+            </div>
+            <h4 class="session-title">${sessionTitle}</h4>
+            <div class="talks"></div>
+          `;
+          parallelGrid.appendChild(roomCard);
+
+          currentParallel.rooms.push({
+            roomIndex: roomIndex,
+            talksEl: roomCard.querySelector(".talks")
+          });
+        }
+
+        currentDayWrap.appendChild(block);
+        continue;
+      }
+
+      if (currentParallel) {
+        for (let i = 3, roomIndex = 1; i < r.length; i += 2, roomIndex++) {
+          const code = compact(r[i] || "");
+          const cell = clean(r[i + 1] || "");
+          if (!code && !cell) continue;
+
+          const roomObj = currentParallel.rooms.find(x => x.roomIndex === roomIndex);
+          if (!roomObj) continue;
+
+          if (isChair(cell)) continue;
+
+          if (isDiscussion(cell)) {
+            const talk = make("div", "talk");
+            talk.innerHTML = `
+              <div class="talk-time">${time}</div>
+              <div class="talk-title">${t("discussion")}</div>
+            `;
+            roomObj.talksEl.appendChild(talk);
+            continue;
+          }
+
+          if (!cell) continue;
+
+          const parsed = splitTitleAuthors(cell);
+          const talk = make("div", "talk");
+          talk.innerHTML = `
+            <div class="talk-time">${time}</div>
+            ${isTalkCode(code) ? `<div class="talk-code">#${code}</div>` : ""}
+            <div class="talk-title">${parsed.title}</div>
+            ${parsed.authors ? `<div class="talk-authors">${parsed.authors}</div>` : ""}
+          `;
+          roomObj.talksEl.appendChild(talk);
+        }
       }
     }
-  });
+
+    if (!app.innerHTML.trim()) {
+      app.className = "error";
+      app.textContent = t("error");
+    }
+  } catch (e) {
+    app.className = "error";
+    app.textContent = t("error");
+  }
 }
+
+function setLanguage(lang) {
+  currentLang = lang;
+  document.getElementById("btn-it").classList.toggle("active", lang === "it");
+  document.getElementById("btn-en").classList.toggle("active", lang === "en");
+  document.getElementById("pageTitle").textContent = t("title");
+  load();
+}
+
+document.getElementById("btn-it").addEventListener("click", () => setLanguage("it"));
+document.getElementById("btn-en").addEventListener("click", () => setLanguage("en"));
 
 load();
 setInterval(load, 300000);
