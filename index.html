@@ -27,16 +27,64 @@ h2 { margin-bottom:10px; }
 <script>
 const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRHVLopLKXErqwt8YOQBbUOTcYa7xNH7HmyT85pZpgQPQ88V7eYZFEY5IQ8T7uxMBH_dHsIF3wULWyY/pub?gid=352682787&single=true&output=csv";
 
+function parseCsv(text) {
+  const rows = [];
+  let row = [];
+  let value = "";
+  let inQuotes = false;
+
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    const next = text[i + 1];
+
+    if (ch === '"') {
+      if (inQuotes && next === '"') {
+        value += '"';
+        i++;
+      } else {
+        inQuotes = !inQuotes;
+      }
+    } else if (ch === "," && !inQuotes) {
+      row.push(value);
+      value = "";
+    } else if ((ch === "\n" || ch === "\r") && !inQuotes) {
+      if (ch === "\r" && next === "\n") i++;
+      row.push(value);
+      rows.push(row);
+      row = [];
+      value = "";
+    } else {
+      value += ch;
+    }
+  }
+
+  if (value.length || row.length) {
+    row.push(value);
+    rows.push(row);
+  }
+
+  return rows.map(r => r.map(c => (c || "").trim()));
+}
+
+function splitTitleAuthors(value) {
+  const raw = (value || "").trim();
+  if (!raw) return { title: "", authors: "" };
+
+  const parts = raw.split("|");
+  return {
+    title: (parts[0] || "").trim(),
+    authors: parts.slice(1).join("|").trim()
+  };
+}
+
 async function load() {
   const res = await fetch(CSV_URL + "&t=" + Date.now());
   const text = await res.text();
-
-  const rows = text.split("\n").map(r => r.split("\t"));
+  const rows = parseCsv(text);
 
   const app = document.getElementById("app");
   app.innerHTML = "";
 
-  let currentDay = "";
   let currentBlock = null;
 
   rows.forEach(r => {
@@ -44,16 +92,13 @@ async function load() {
     const time = (r[1] || "").trim();
     const general = (r[2] || "").trim();
 
-    // nuovo giorno
-    if (date.match(/\d{2}\/\d{2}\/\d{4}/)) {
-      currentDay = date;
+    if (date.match(/^\d{2}\/\d{2}\/\d{4}$/)) {
       const dayDiv = document.createElement("div");
       dayDiv.className = "day";
       dayDiv.innerHTML = "<h2>" + date + "</h2>";
       app.appendChild(dayDiv);
     }
 
-    // evento generale
     if (general && !r.slice(3).join("").trim()) {
       const block = document.createElement("div");
       block.className = "block";
@@ -63,20 +108,19 @@ async function load() {
       return;
     }
 
-    // nuova sessione
-    if ((r[3] || "").match(/^\d+[A-Z]/)) {
+    if ((r[3] || "").trim().match(/^\d+[A-Z]$/)) {
       const block = document.createElement("div");
       block.className = "block";
       block.innerHTML = `<div class="time">${time}</div>`;
-      
       currentBlock = block;
       app.appendChild(block);
 
       for (let i = 3; i < r.length; i += 2) {
         const code = (r[i] || "").trim();
-        const title = (r[i+1] || "").trim();
+        const title = (r[i + 1] || "").trim();
 
         if (!code || !title) continue;
+        if (!code.match(/^\d+[A-Z]$/)) continue;
 
         const room = document.createElement("div");
         room.className = "room";
@@ -86,27 +130,23 @@ async function load() {
       return;
     }
 
-    // interventi
     if (currentBlock) {
       for (let i = 3; i < r.length; i += 2) {
         const code = (r[i] || "").trim();
-        const text = (r[i+1] || "").trim();
+        const cell = (r[i + 1] || "").trim();
 
-        if (!text) continue;
-        if (/chair/i.test(text)) continue;
+        if (!cell) continue;
+        if (/^chair$/i.test(cell)) continue;
 
-        const parts = text.split("|");
-
-        const title = parts[0] || "";
-        const authors = parts.slice(1).join("|");
+        const parsed = splitTitleAuthors(cell);
 
         const talk = document.createElement("div");
         talk.className = "talk";
         talk.innerHTML = `
           <div class="time">${time}</div>
-          ${code ? `<div class="code">#${code}</div>` : ""}
-          <div class="title">${title}</div>
-          <div class="authors">${authors}</div>
+          ${code && /^\d+$/.test(code) ? `<div class="code">#${code}</div>` : ""}
+          <div class="title">${parsed.title}</div>
+          ${parsed.authors ? `<div class="authors">${parsed.authors}</div>` : ""}
         `;
 
         currentBlock.appendChild(talk);
@@ -115,7 +155,6 @@ async function load() {
   });
 }
 
-// refresh automatico ogni 5 minuti
 load();
 setInterval(load, 300000);
 </script>
