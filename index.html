@@ -175,10 +175,6 @@ body {
   border-color: #2047d2;
   color: #fff;
 }
-.note {
-  color: #677089;
-  font-size: 14px;
-}
 @media (max-width: 860px) {
   .block-head {
     flex-direction: column;
@@ -210,6 +206,7 @@ const UI = {
     loading: "Caricamento...",
     error: "Errore nel caricamento del programma.",
     session: "Sessione",
+    parallelSessions: "Sessioni parallele",
     break: "Pausa",
     plenary: "Plenaria",
     social: "Evento sociale",
@@ -221,6 +218,7 @@ const UI = {
     loading: "Loading...",
     error: "Error while loading the programme.",
     session: "Session",
+    parallelSessions: "Parallel sessions",
     break: "Break",
     plenary: "Plenary",
     social: "Social event",
@@ -350,9 +348,16 @@ function formatDate(dateStr) {
 
 function classifyGeneral(title) {
   const s = compact(title).toLowerCase();
-  if (/pausa|pranzo|caff[eè]|coffee|lunch/.test(s)) return "break";
+  if (/pausa|pranzo|caff[eè]|coffee|lunch|network caffè|network caffe/.test(s)) return "break";
   if (/cena sociale|social dinner/.test(s)) return "social";
   return "plenary";
+}
+
+function repeatedNonEmpty(values) {
+  const filled = values.map(compact).filter(Boolean);
+  if (!filled.length) return "";
+  const normalized = [...new Set(filled.map(v => v.toLowerCase()))];
+  return normalized.length === 1 ? filled[0] : "";
 }
 
 function make(tag, cls, html = "") {
@@ -391,6 +396,9 @@ async function load() {
       const date = compact(r[0] || "");
       const time = normalizeTime(r[1] || "");
       const general = clean(r[2] || "");
+      const tail = r.slice(3);
+      const repeatedTailText = repeatedNonEmpty(tail);
+      const tailHasContent = tail.some(cell => compact(cell));
 
       if (isDateCell(date)) {
         currentDayWrap = make("section", "day");
@@ -398,7 +406,7 @@ async function load() {
         app.appendChild(currentDayWrap);
         currentParallel = null;
 
-        if (general && !r.slice(3).some(cell => compact(cell))) {
+        if (general && !tailHasContent) {
           const type = classifyGeneral(general);
           const block = make("div", "block");
           block.innerHTML = `
@@ -411,14 +419,29 @@ async function load() {
             </div>
           `;
           currentDayWrap.appendChild(block);
+          continue;
         }
-        continue;
+
+        if (repeatedTailText && !isSessionCode(tail[0] || "")) {
+          const type = classifyGeneral(repeatedTailText);
+          const block = make("div", "block");
+          block.innerHTML = `
+            <div class="block-head">
+              <div>
+                <div class="type ${type}">${typeLabel(type)}</div>
+                <h3 class="block-title">${repeatedTailText}</h3>
+              </div>
+              <div class="time">${time}</div>
+            </div>
+          `;
+          currentDayWrap.appendChild(block);
+          continue;
+        }
       }
 
       if (!currentDayWrap) continue;
 
-      const tailHasContent = r.slice(3).some(cell => compact(cell));
-
+      // plenarie / pause / eventi generali anche se “ripetuti” su più colonne
       if (general && !tailHasContent) {
         currentParallel = null;
         const type = classifyGeneral(general);
@@ -436,7 +459,24 @@ async function load() {
         continue;
       }
 
-      const chairOnly = r.slice(3).every((cell, idx) => {
+      if (repeatedTailText && !tail.some((cell, idx) => idx % 2 === 0 && isSessionCode(cell))) {
+        currentParallel = null;
+        const type = classifyGeneral(repeatedTailText);
+        const block = make("div", "block");
+        block.innerHTML = `
+          <div class="block-head">
+            <div>
+              <div class="type ${type}">${typeLabel(type)}</div>
+              <h3 class="block-title">${repeatedTailText}</h3>
+            </div>
+            <div class="time">${time}</div>
+          </div>
+        `;
+        currentDayWrap.appendChild(block);
+        continue;
+      }
+
+      const chairOnly = tail.every((cell, idx) => {
         if (idx % 2 === 0) return !compact(cell);
         return !compact(cell) || isChair(cell);
       });
@@ -457,7 +497,7 @@ async function load() {
           <div class="block-head">
             <div>
               <div class="type">${t("session")}</div>
-              <h3 class="block-title">${currentLang === "it" ? "Sessioni parallele" : "Parallel sessions"}</h3>
+              <h3 class="block-title">${t("parallelSessions")}</h3>
             </div>
             <div class="time">${time}</div>
           </div>
@@ -483,7 +523,8 @@ async function load() {
           parallelGrid.appendChild(roomCard);
 
           currentParallel.rooms.push({
-            roomIndex: roomIndex,
+            pairIndex: i,
+            roomIndex,
             talksEl: roomCard.querySelector(".talks")
           });
         }
@@ -493,13 +534,11 @@ async function load() {
       }
 
       if (currentParallel) {
-        for (let i = 3, roomIndex = 1; i < r.length; i += 2, roomIndex++) {
+        for (const roomObj of currentParallel.rooms) {
+          const i = roomObj.pairIndex;
           const code = compact(r[i] || "");
           const cell = clean(r[i + 1] || "");
           if (!code && !cell) continue;
-
-          const roomObj = currentParallel.rooms.find(x => x.roomIndex === roomIndex);
-          if (!roomObj) continue;
 
           if (isChair(cell)) continue;
 
@@ -552,6 +591,5 @@ document.getElementById("btn-en").addEventListener("click", () => setLanguage("e
 load();
 setInterval(load, 300000);
 </script>
-
 </body>
 </html>
