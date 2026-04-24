@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Programma AIUCD</title>
+
+<style>
+body { font-family: Arial, sans-serif; margin:0; background:#f5f6fa; }
+.wrap { max-width:1100px; margin:auto; padding:20px; }
+
+.block { background:white; margin-bottom:16px; border-radius:12px; padding:16px; box-shadow:0 6px 20px rgba(0,0,0,0.05);}
+.time { font-weight:bold; }
+.room { margin-top:10px; border-top:1px solid #eee; padding-top:10px; }
+.talk { margin-bottom:10px; }
+.code { font-weight:bold; color:#2047d2; }
+.title { font-weight:600; }
+.authors { color:#666; font-size:14px; }
+.day { margin-top:30px; }
+h2 { margin-bottom:10px; }
+</style>
+</head>
+
+<body>
+<div class="wrap" id="app">Caricamento...</div>
+
+<script>
+const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRHVLopLKXErqwt8YOQBbUOTcYa7xNH7HmyT85pZpgQPQ88V7eYZFEY5IQ8T7uxMBH_dHsIF3wULWyY/pub?gid=352682787&single=true&output=csv";
+
+async function load() {
+  const res = await fetch(CSV_URL + "&t=" + Date.now());
+  const text = await res.text();
+
+  const rows = text.split("\n").map(r => r.split("\t"));
+
+  const app = document.getElementById("app");
+  app.innerHTML = "";
+
+  let currentDay = "";
+  let currentBlock = null;
+
+  rows.forEach(r => {
+    const date = (r[0] || "").trim();
+    const time = (r[1] || "").trim();
+    const general = (r[2] || "").trim();
+
+    // nuovo giorno
+    if (date.match(/\d{2}\/\d{2}\/\d{4}/)) {
+      currentDay = date;
+      const dayDiv = document.createElement("div");
+      dayDiv.className = "day";
+      dayDiv.innerHTML = "<h2>" + date + "</h2>";
+      app.appendChild(dayDiv);
+    }
+
+    // evento generale
+    if (general && !r.slice(3).join("").trim()) {
+      const block = document.createElement("div");
+      block.className = "block";
+      block.innerHTML = `<div class="time">${time}</div><div>${general}</div>`;
+      app.appendChild(block);
+      currentBlock = null;
+      return;
+    }
+
+    // nuova sessione
+    if ((r[3] || "").match(/^\d+[A-Z]/)) {
+      const block = document.createElement("div");
+      block.className = "block";
+      block.innerHTML = `<div class="time">${time}</div>`;
+      
+      currentBlock = block;
+      app.appendChild(block);
+
+      for (let i = 3; i < r.length; i += 2) {
+        const code = (r[i] || "").trim();
+        const title = (r[i+1] || "").trim();
+
+        if (!code || !title) continue;
+
+        const room = document.createElement("div");
+        room.className = "room";
+        room.innerHTML = `<div class="code">${code}</div><div class="title">${title}</div>`;
+        block.appendChild(room);
+      }
+      return;
+    }
+
+    // interventi
+    if (currentBlock) {
+      for (let i = 3; i < r.length; i += 2) {
+        const code = (r[i] || "").trim();
+        const text = (r[i+1] || "").trim();
+
+        if (!text) continue;
+        if (/chair/i.test(text)) continue;
+
+        const parts = text.split("|");
+
+        const title = parts[0] || "";
+        const authors = parts.slice(1).join("|");
+
+        const talk = document.createElement("div");
+        talk.className = "talk";
+        talk.innerHTML = `
+          <div class="time">${time}</div>
+          ${code ? `<div class="code">#${code}</div>` : ""}
+          <div class="title">${title}</div>
+          <div class="authors">${authors}</div>
+        `;
+
+        currentBlock.appendChild(talk);
+      }
+    }
+  });
+}
+
+// refresh automatico ogni 5 minuti
+load();
+setInterval(load, 300000);
+</script>
+
+</body>
+</html>
