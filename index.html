@@ -6,202 +6,376 @@
 <title>Programma AIUCD</title>
 
 <style>
-body {
-  font-family: Arial, sans-serif;
-  margin: 0;
-  background: #f5f6fa;
-  color: #1d2433;
-}
-.wrap {
-  max-width: 1200px;
-  margin: auto;
-  padding: 20px;
-}
-.day {
-  margin-top: 28px;
-}
-.day h2 {
-  margin: 0 0 14px;
-  font-size: 28px;
-}
-.block {
-  background: white;
-  margin-bottom: 16px;
-  border-radius: 18px;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.05);
-  overflow: hidden;
-}
-.block-head {
-  display: flex;
-  justify-content: space-between;
-  gap: 16px;
-  align-items: flex-start;
-  padding: 18px 20px;
-  border-bottom: 1px solid #e6e9f0;
-}
-.time {
-  font-weight: 700;
-  white-space: nowrap;
-}
-.type {
-  display: inline-block;
-  font-size: 12px;
-  font-weight: 700;
-  text-transform: uppercase;
-  color: #2047d2;
-  background: #edf2ff;
-  border-radius: 999px;
-  padding: 6px 10px;
-}
-.type.break {
-  background: #fff5e7;
-  color: #8f5b00;
-}
-.type.plenary {
-  background: #ebf9f1;
-  color: #0a7d48;
-}
-.type.social {
-  background: #f4efff;
-  color: #6943d0;
-}
-.block-title {
-  margin: 10px 0 0;
-  font-size: 22px;
-  line-height: 1.25;
-}
-.parallel {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 14px;
-  padding: 18px 20px 20px;
-}
-.room-card {
-  border: 1px solid #e6e9f0;
-  border-radius: 16px;
-  padding: 14px;
-  background: #fcfdff;
-}
-.room-meta {
-  display: flex;
-  justify-content: space-between;
-  gap: 8px;
-  align-items: baseline;
-  margin-bottom: 10px;
-}
-.room-name {
-  font-size: 13px;
-  text-transform: uppercase;
-  letter-spacing: .05em;
-  color: #677089;
-  font-weight: 700;
-}
-.session-code {
-  font-size: 13px;
-  font-weight: 800;
-  color: #2047d2;
-}
-.session-title {
-  margin: 0 0 12px;
-  font-size: 18px;
-  line-height: 1.3;
-}
-.talks {
-  display: grid;
-  gap: 10px;
-}
-.talk {
-  border-top: 1px dashed #dfe4ee;
-  padding-top: 10px;
-}
-.talk:first-child {
-  border-top: 0;
-  padding-top: 0;
-}
-.talk-time {
-  font-size: 12px;
-  color: #677089;
-  font-weight: 700;
-  margin-bottom: 4px;
-}
-.talk-code {
-  font-size: 12px;
-  color: #2047d2;
-  font-weight: 800;
-  margin-bottom: 4px;
-}
-.talk-title {
-  font-weight: 700;
-  line-height: 1.35;
-  margin-bottom: 4px;
-}
-.talk-authors {
-  color: #677089;
-  font-size: 14px;
-  line-height: 1.4;
-}
-.loading, .error {
-  background: #fff;
-  border: 1px solid #e6e9f0;
-  border-radius: 20px;
-  padding: 18px;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.05);
-  color: #677089;
-}
-.toolbar {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  align-items: center;
-  margin-bottom: 20px;
-  flex-wrap: wrap;
-}
-.lang-toggle {
-  display: flex;
-  gap: 8px;
-}
-.lang-toggle button {
-  appearance: none;
-  border: 1px solid #dfe4ee;
-  background: #fff;
-  color: #1d2433;
-  border-radius: 999px;
-  padding: 10px 14px;
-  font-weight: 600;
-  cursor: pointer;
-}
-.lang-toggle button.active {
-  background: #2047d2;
-  border-color: #2047d2;
-  color: #fff;
-}
-@media (max-width: 860px) {
-  .block-head {
-    flex-direction: column;
+  :root {
+    --bg: #f5f6fa;
+    --card: #ffffff;
+    --text: #1d2433;
+    --muted: #677089;
+    --line: #e6e9f0;
+    --accent: #2047d2;
+    --accent-soft: #edf2ff;
+    --ok: #0a7d48;
+    --warn: #8f5b00;
+    --social: #6943d0;
+    --shadow: 0 6px 20px rgba(0,0,0,0.05);
+    --radius: 18px;
   }
-}
+
+  * { box-sizing: border-box; }
+
+  body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+  }
+
+  .wrap {
+    max-width: 1200px;
+    margin: auto;
+    padding: 20px;
+  }
+
+  .toolbar {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 12px;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+
+  .titlebox,
+  .langbox {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 14px 16px;
+  }
+
+  .eyebrow {
+    color: var(--muted);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    margin-bottom: 6px;
+  }
+
+  h1 {
+    margin: 0;
+    font-size: 28px;
+    line-height: 1.1;
+  }
+
+  .sub {
+    margin-top: 6px;
+    color: var(--muted);
+    font-size: 14px;
+  }
+
+  .lang-toggle {
+    display: flex;
+    gap: 8px;
+  }
+
+  .lang-toggle button,
+  .day-btn,
+  .nav-btn {
+    appearance: none;
+    border: 1px solid var(--line);
+    background: #fff;
+    color: var(--text);
+    border-radius: 999px;
+    padding: 10px 14px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .lang-toggle button.active,
+  .day-btn.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+
+  .day-nav {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 18px;
+  }
+
+  .day-buttons {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .stats {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+  }
+
+  .pill {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 10px 14px;
+    font-size: 13px;
+    color: var(--muted);
+    box-shadow: var(--shadow);
+  }
+
+  .pill strong { color: var(--text); }
+
+  .timeline {
+    display: grid;
+    gap: 16px;
+  }
+
+  .block {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 24px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+
+  .block-head {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    align-items: flex-start;
+    padding: 18px 20px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .time {
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  .type {
+    display: inline-block;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--accent);
+    background: var(--accent-soft);
+    border-radius: 999px;
+    padding: 6px 10px;
+  }
+
+  .type.break {
+    background: #fff5e7;
+    color: var(--warn);
+  }
+
+  .type.plenary {
+    background: #ebf9f1;
+    color: var(--ok);
+  }
+
+  .type.social {
+    background: #f4efff;
+    color: var(--social);
+  }
+
+  .block-title {
+    margin: 10px 0 0;
+    font-size: 22px;
+    line-height: 1.25;
+  }
+
+  .location {
+    margin-top: 8px;
+    font-size: 14px;
+    color: var(--muted);
+    font-weight: 600;
+  }
+
+  .parallel {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 14px;
+    padding: 18px 20px 20px;
+  }
+
+  .room-card {
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 14px;
+    background: #fcfdff;
+  }
+
+  .room-meta {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    align-items: baseline;
+    margin-bottom: 10px;
+  }
+
+  .room-name {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    color: var(--muted);
+    font-weight: 700;
+  }
+
+  .session-code {
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--accent);
+  }
+
+  .session-title {
+    margin: 0 0 6px;
+    font-size: 18px;
+    line-height: 1.3;
+  }
+
+  .chair-line {
+    margin: 0 0 12px;
+    font-size: 12px;
+    line-height: 1.35;
+    color: var(--muted);
+  }
+
+  .talks {
+    display: grid;
+    gap: 10px;
+  }
+
+  .talk {
+    border-top: 1px dashed #dfe4ee;
+    padding-top: 10px;
+  }
+
+  .talk:first-child {
+    border-top: 0;
+    padding-top: 0;
+  }
+
+  .talk-time {
+    font-size: 12px;
+    color: var(--muted);
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+
+  .talk-code {
+    font-size: 12px;
+    color: var(--accent);
+    font-weight: 800;
+    margin-bottom: 4px;
+  }
+
+  .talk-title {
+    font-weight: 700;
+    line-height: 1.35;
+    margin-bottom: 4px;
+  }
+
+  .talk-authors {
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.4;
+  }
+
+  .loading, .error {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    padding: 18px;
+    box-shadow: var(--shadow);
+    color: var(--muted);
+  }
+
+  @media (max-width: 860px) {
+    .toolbar {
+      grid-template-columns: 1fr;
+    }
+    .block-head {
+      flex-direction: column;
+    }
+    .day-nav {
+      grid-template-columns: 1fr;
+    }
+    .day-buttons {
+      justify-content: flex-start;
+    }
+  }
 </style>
 </head>
 
 <body>
 <div class="wrap">
   <div class="toolbar">
-    <h1 id="pageTitle">Programma AIUCD Cagliari 2026</h1>
-    <div class="lang-toggle">
-      <button id="btn-it" class="active">IT</button>
-      <button id="btn-en">EN</button>
+    <div class="titlebox">
+      <div class="eyebrow" id="eyebrow">Programma</div>
+      <h1 id="pageTitle">Programma AIUCD Cagliari 2026</h1>
+      <div class="sub" id="pageSubtitle"></div>
+    </div>
+
+    <div class="langbox">
+      <div class="eyebrow">Language</div>
+      <div class="lang-toggle">
+        <button id="btn-it" class="active">IT</button>
+        <button id="btn-en">EN</button>
+      </div>
     </div>
   </div>
+
+  <div class="day-nav">
+    <button class="nav-btn" id="prevDay">←</button>
+    <div class="day-buttons" id="dayButtons"></div>
+    <button class="nav-btn" id="nextDay">→</button>
+  </div>
+
+  <div class="stats" id="stats"></div>
+
   <div id="app" class="loading">Caricamento...</div>
 </div>
 
 <script>
-const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRHVLopLKXErqwt8YOQBbUOTcYa7xNH7HmyT85pZpgQPQ88V7eYZFEY5IQ8T7uxMBH_dHsIF3wULWyY/pub?gid=352682787&single=true&output=csv";
+const CONFIG = {
+  csvUrl: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRHVLopLKXErqwt8YOQBbUOTcYa7xNH7HmyT85pZpgQPQ88V7eYZFEY5IQ8T7uxMBH_dHsIF3wULWyY/pub?gid=352682787&single=true&output=csv",
+
+  // Nomi reali degli spazi delle sessioni parallele
+  roomNames: {
+    1: "Aula 1",
+    2: "Aula 2",
+    3: "Aula 3"
+  },
+
+  // Luoghi di default
+  locations: {
+    plenary: "Sede congressuale",
+    break: "Area coffee / foyer",
+    lunch: "Area lunch",
+    social: "Sede evento sociale",
+    fallback: "Sede congressuale"
+  },
+
+  // Override specifici opzionali: usa chiave DATE|TIME|TITLE
+  // Esempio:
+  // "03/06/2026|16:45–17:30|PAUSA caffè": "Corpo aggiunto / area coffee"
+  overrides: {}
+};
 
 let currentLang = "it";
+let programmeDays = [];
+let activeDayIndex = 0;
 
 const UI = {
   it: {
+    eyebrow: "Programma",
     title: "Programma AIUCD Cagliari 2026",
     loading: "Caricamento...",
     error: "Errore nel caricamento del programma.",
@@ -211,9 +385,18 @@ const UI = {
     plenary: "Plenaria",
     social: "Evento sociale",
     discussion: "Dibattito",
-    room: "Aula"
+    room: "Aula",
+    location: "Spazio",
+    chair: "Chair",
+    previous: "Giorno precedente",
+    next: "Giorno successivo",
+    days: "giorni",
+    sessions: "sessioni",
+    spaces: "spazi",
+    shared: "momenti comuni"
   },
   en: {
+    eyebrow: "Programme",
     title: "AIUCD Cagliari 2026 Programme",
     loading: "Loading...",
     error: "Error while loading the programme.",
@@ -223,7 +406,15 @@ const UI = {
     plenary: "Plenary",
     social: "Social event",
     discussion: "Discussion",
-    room: "Room"
+    room: "Room",
+    location: "Location",
+    chair: "Chair",
+    previous: "Previous day",
+    next: "Next day",
+    days: "days",
+    sessions: "sessions",
+    spaces: "spaces",
+    shared: "shared moments"
   }
 };
 
@@ -348,7 +539,8 @@ function formatDate(dateStr) {
 
 function classifyGeneral(title) {
   const s = compact(title).toLowerCase();
-  if (/pausa|pranzo|caff[eè]|coffee|lunch|network caffè|network caffe/.test(s)) return "break";
+  if (/pranzo|lunch/.test(s)) return "break";
+  if (/pausa|caff[eè]|coffee|network caff[eè]|network caffe/.test(s)) return "break";
   if (/cena sociale|social dinner/.test(s)) return "social";
   return "plenary";
 }
@@ -360,236 +552,341 @@ function repeatedNonEmpty(values) {
   return normalized.length === 1 ? filled[0] : "";
 }
 
-function make(tag, cls, html = "") {
-  const el = document.createElement(tag);
-  if (cls) el.className = cls;
-  if (html) el.innerHTML = html;
-  return el;
+function inferGeneralLocation(type, title, date, time) {
+  const overrideKey = `${date}|${time}|${title}`;
+  if (CONFIG.overrides[overrideKey]) return CONFIG.overrides[overrideKey];
+
+  const s = compact(title).toLowerCase();
+  if (/pranzo|lunch/.test(s)) return CONFIG.locations.lunch;
+  if (type === "break") return CONFIG.locations.break;
+  if (type === "social") return CONFIG.locations.social;
+  if (type === "plenary") return CONFIG.locations.plenary;
+  return CONFIG.locations.fallback;
 }
 
-function typeLabel(type) {
-  if (type === "break") return t("break");
-  if (type === "social") return t("social");
-  if (type === "plenary") return t("plenary");
-  return t("session");
+function buildProgramme(rows) {
+  const days = [];
+  let currentDay = null;
+  let currentParallel = null;
+
+  function startDay(date) {
+    currentDay = {
+      date,
+      blocks: []
+    };
+    days.push(currentDay);
+    currentParallel = null;
+  }
+
+  for (const r of rows) {
+    if (!r.some(cell => compact(cell))) continue;
+
+    const date = compact(r[0] || "");
+    const time = normalizeTime(r[1] || "");
+    const general = clean(r[2] || "");
+    const tail = r.slice(3);
+    const repeatedTailText = repeatedNonEmpty(tail);
+    const tailHasContent = tail.some(cell => compact(cell));
+
+    if (isDateCell(date)) {
+      if (!currentDay || currentDay.date !== date) {
+        startDay(date);
+      }
+
+      if (general && !tailHasContent) {
+        const type = classifyGeneral(general);
+        currentDay.blocks.push({
+          type,
+          time,
+          title: general,
+          location: inferGeneralLocation(type, general, date, time)
+        });
+        continue;
+      }
+
+      if (repeatedTailText && !isSessionCode(tail[0] || "")) {
+        const type = classifyGeneral(repeatedTailText);
+        currentDay.blocks.push({
+          type,
+          time,
+          title: repeatedTailText,
+          location: inferGeneralLocation(type, repeatedTailText, date, time)
+        });
+        continue;
+      }
+    }
+
+    if (!currentDay) continue;
+
+    if (general && !tailHasContent) {
+      currentParallel = null;
+      const type = classifyGeneral(general);
+      currentDay.blocks.push({
+        type,
+        time,
+        title: general,
+        location: inferGeneralLocation(type, general, currentDay.date, time)
+      });
+      continue;
+    }
+
+    if (repeatedTailText && !tail.some((cell, idx) => idx % 2 === 0 && isSessionCode(cell))) {
+      currentParallel = null;
+      const type = classifyGeneral(repeatedTailText);
+      currentDay.blocks.push({
+        type,
+        time,
+        title: repeatedTailText,
+        location: inferGeneralLocation(type, repeatedTailText, currentDay.date, time)
+      });
+      continue;
+    }
+
+    const chairOnly = tail.every((cell, idx) => {
+      if (idx % 2 === 0) return !compact(cell);
+      return !compact(cell) || isChair(cell);
+    });
+
+    if (chairOnly && currentParallel) {
+      for (const roomObj of currentParallel.rooms) {
+        const chairCell = clean(r[roomObj.pairIndex + 1] || "");
+        if (chairCell && !isChair(chairCell)) {
+          roomObj.chair = chairCell;
+        }
+      }
+      continue;
+    }
+
+    const startsParallel = (() => {
+      for (let i = 3; i < r.length; i += 2) {
+        if (isSessionCode(r[i])) return true;
+      }
+      return false;
+    })();
+
+    if (startsParallel) {
+      currentParallel = {
+        type: "parallel",
+        time,
+        title: t("parallelSessions"),
+        rooms: []
+      };
+
+      for (let i = 3, roomIndex = 1; i < r.length; i += 2, roomIndex++) {
+        const sessionCode = compact(r[i] || "");
+        const sessionTitle = clean(r[i + 1] || "");
+        if (!sessionCode || !sessionTitle || !isSessionCode(sessionCode)) continue;
+
+        currentParallel.rooms.push({
+          pairIndex: i,
+          roomIndex,
+          roomName: CONFIG.roomNames[roomIndex] || `${t("room")} ${roomIndex}`,
+          code: sessionCode,
+          title: sessionTitle,
+          chair: "",
+          talks: []
+        });
+      }
+
+      currentDay.blocks.push(currentParallel);
+      continue;
+    }
+
+    if (currentParallel) {
+      for (const roomObj of currentParallel.rooms) {
+        const i = roomObj.pairIndex;
+        const code = compact(r[i] || "");
+        const cell = clean(r[i + 1] || "");
+        if (!code && !cell) continue;
+
+        if (isChair(cell)) continue;
+
+        if (isDiscussion(cell)) {
+          roomObj.talks.push({
+            time,
+            code: "",
+            title: t("discussion"),
+            authors: ""
+          });
+          continue;
+        }
+
+        if (!cell) continue;
+
+        const parsed = splitTitleAuthors(cell);
+        roomObj.talks.push({
+          time,
+          code: isTalkCode(code) ? code : "",
+          title: parsed.title,
+          authors: parsed.authors
+        });
+      }
+    }
+  }
+
+  return days;
 }
 
-async function load() {
+function renderStats(day) {
+  const stats = document.getElementById("stats");
+  const sessionCount = day.blocks
+    .filter(b => b.type === "parallel")
+    .reduce((sum, b) => sum + b.rooms.length, 0);
+
+  const sharedCount = day.blocks.filter(b => b.type !== "parallel").length;
+  const spaces = new Set();
+
+  day.blocks.forEach(block => {
+    if (block.type === "parallel") {
+      block.rooms.forEach(r => spaces.add(r.roomName));
+    } else if (block.location) {
+      spaces.add(block.location);
+    }
+  });
+
+  stats.innerHTML = `
+    <div class="pill"><strong>${programmeDays.length}</strong> ${t("days")}</div>
+    <div class="pill"><strong>${sessionCount}</strong> ${t("sessions")}</div>
+    <div class="pill"><strong>${sharedCount}</strong> ${t("shared")}</div>
+    <div class="pill"><strong>${spaces.size}</strong> ${t("spaces")}</div>
+  `;
+}
+
+function renderDayButtons() {
+  const box = document.getElementById("dayButtons");
+  box.innerHTML = programmeDays.map((day, index) => `
+    <button class="day-btn ${index === activeDayIndex ? "active" : ""}" data-day-index="${index}">
+      ${formatDate(day.date)}
+    </button>
+  `).join("");
+
+  box.querySelectorAll("[data-day-index]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      activeDayIndex = Number(btn.dataset.dayIndex);
+      render();
+    });
+  });
+}
+
+function renderBlock(block) {
+  if (block.type === "parallel") {
+    return `
+      <section class="block">
+        <div class="block-head">
+          <div>
+            <div class="type">${t("session")}</div>
+            <h2 class="block-title">${t("parallelSessions")}</h2>
+          </div>
+          <div class="time">${block.time || ""}</div>
+        </div>
+
+        <div class="parallel">
+          ${block.rooms.map(room => `
+            <article class="room-card">
+              <div class="room-meta">
+                <div class="room-name">${room.roomName}</div>
+                <div class="session-code">${room.code}</div>
+              </div>
+
+              <h3 class="session-title">${room.title}</h3>
+              <div class="location">${t("location")}: ${room.roomName}</div>
+              ${room.chair ? `<div class="chair-line">${t("chair")}: ${room.chair}</div>` : ""}
+
+              <div class="talks">
+                ${room.talks.map(talk => `
+                  <div class="talk">
+                    <div class="talk-time">${talk.time || ""}</div>
+                    ${talk.code ? `<div class="talk-code">#${talk.code}</div>` : ""}
+                    <div class="talk-title">${talk.title || ""}</div>
+                    ${talk.authors ? `<div class="talk-authors">${talk.authors}</div>` : ""}
+                  </div>
+                `).join("")}
+              </div>
+            </article>
+          `).join("")}
+        </div>
+      </section>
+    `;
+  }
+
+  return `
+    <section class="block">
+      <div class="block-head">
+        <div>
+          <div class="type ${block.type}">${block.type === "break" ? t("break") : block.type === "social" ? t("social") : t("plenary")}</div>
+          <h2 class="block-title">${block.title || ""}</h2>
+          <div class="location">${t("location")}: ${block.location || CONFIG.locations.fallback}</div>
+        </div>
+        <div class="time">${block.time || ""}</div>
+      </div>
+    </section>
+  `;
+}
+
+async function loadProgramme() {
   const app = document.getElementById("app");
   app.className = "loading";
   app.textContent = t("loading");
 
   try {
-    const res = await fetch(CSV_URL + "&t=" + Date.now(), { cache: "no-store" });
+    const res = await fetch(CONFIG.csvUrl + "&t=" + Date.now(), { cache: "no-store" });
     const text = await res.text();
     const rows = parseCsv(text);
+    programmeDays = buildProgramme(rows);
 
-    app.className = "";
-    app.innerHTML = "";
-
-    let currentDayWrap = null;
-    let currentParallel = null;
-
-    for (const r of rows) {
-      if (!r.some(cell => compact(cell))) continue;
-
-      const date = compact(r[0] || "");
-      const time = normalizeTime(r[1] || "");
-      const general = clean(r[2] || "");
-      const tail = r.slice(3);
-      const repeatedTailText = repeatedNonEmpty(tail);
-      const tailHasContent = tail.some(cell => compact(cell));
-
-      if (isDateCell(date)) {
-        currentDayWrap = make("section", "day");
-        currentDayWrap.appendChild(make("h2", "", formatDate(date)));
-        app.appendChild(currentDayWrap);
-        currentParallel = null;
-
-        if (general && !tailHasContent) {
-          const type = classifyGeneral(general);
-          const block = make("div", "block");
-          block.innerHTML = `
-            <div class="block-head">
-              <div>
-                <div class="type ${type}">${typeLabel(type)}</div>
-                <h3 class="block-title">${general}</h3>
-              </div>
-              <div class="time">${time}</div>
-            </div>
-          `;
-          currentDayWrap.appendChild(block);
-          continue;
-        }
-
-        if (repeatedTailText && !isSessionCode(tail[0] || "")) {
-          const type = classifyGeneral(repeatedTailText);
-          const block = make("div", "block");
-          block.innerHTML = `
-            <div class="block-head">
-              <div>
-                <div class="type ${type}">${typeLabel(type)}</div>
-                <h3 class="block-title">${repeatedTailText}</h3>
-              </div>
-              <div class="time">${time}</div>
-            </div>
-          `;
-          currentDayWrap.appendChild(block);
-          continue;
-        }
-      }
-
-      if (!currentDayWrap) continue;
-
-      // plenarie / pause / eventi generali anche se “ripetuti” su più colonne
-      if (general && !tailHasContent) {
-        currentParallel = null;
-        const type = classifyGeneral(general);
-        const block = make("div", "block");
-        block.innerHTML = `
-          <div class="block-head">
-            <div>
-              <div class="type ${type}">${typeLabel(type)}</div>
-              <h3 class="block-title">${general}</h3>
-            </div>
-            <div class="time">${time}</div>
-          </div>
-        `;
-        currentDayWrap.appendChild(block);
-        continue;
-      }
-
-      if (repeatedTailText && !tail.some((cell, idx) => idx % 2 === 0 && isSessionCode(cell))) {
-        currentParallel = null;
-        const type = classifyGeneral(repeatedTailText);
-        const block = make("div", "block");
-        block.innerHTML = `
-          <div class="block-head">
-            <div>
-              <div class="type ${type}">${typeLabel(type)}</div>
-              <h3 class="block-title">${repeatedTailText}</h3>
-            </div>
-            <div class="time">${time}</div>
-          </div>
-        `;
-        currentDayWrap.appendChild(block);
-        continue;
-      }
-
-      const chairOnly = tail.every((cell, idx) => {
-        if (idx % 2 === 0) return !compact(cell);
-        return !compact(cell) || isChair(cell);
-      });
-      if (chairOnly) continue;
-
-      const startsParallel = (() => {
-        for (let i = 3; i < r.length; i += 2) {
-          if (isSessionCode(r[i])) return true;
-        }
-        return false;
-      })();
-
-      if (startsParallel) {
-        currentParallel = { rooms: [] };
-
-        const block = make("div", "block");
-        block.innerHTML = `
-          <div class="block-head">
-            <div>
-              <div class="type">${t("session")}</div>
-              <h3 class="block-title">${t("parallelSessions")}</h3>
-            </div>
-            <div class="time">${time}</div>
-          </div>
-        `;
-
-        const parallelGrid = make("div", "parallel");
-        block.appendChild(parallelGrid);
-
-        for (let i = 3, roomIndex = 1; i < r.length; i += 2, roomIndex++) {
-          const sessionCode = compact(r[i] || "");
-          const sessionTitle = clean(r[i + 1] || "");
-          if (!sessionCode || !sessionTitle || !isSessionCode(sessionCode)) continue;
-
-          const roomCard = make("article", "room-card");
-          roomCard.innerHTML = `
-            <div class="room-meta">
-              <div class="room-name">${t("room")} ${roomIndex}</div>
-              <div class="session-code">${sessionCode}</div>
-            </div>
-            <h4 class="session-title">${sessionTitle}</h4>
-            <div class="talks"></div>
-          `;
-          parallelGrid.appendChild(roomCard);
-
-          currentParallel.rooms.push({
-            pairIndex: i,
-            roomIndex,
-            talksEl: roomCard.querySelector(".talks")
-          });
-        }
-
-        currentDayWrap.appendChild(block);
-        continue;
-      }
-
-      if (currentParallel) {
-        for (const roomObj of currentParallel.rooms) {
-          const i = roomObj.pairIndex;
-          const code = compact(r[i] || "");
-          const cell = clean(r[i + 1] || "");
-          if (!code && !cell) continue;
-
-          if (isChair(cell)) continue;
-
-          if (isDiscussion(cell)) {
-            const talk = make("div", "talk");
-            talk.innerHTML = `
-              <div class="talk-time">${time}</div>
-              <div class="talk-title">${t("discussion")}</div>
-            `;
-            roomObj.talksEl.appendChild(talk);
-            continue;
-          }
-
-          if (!cell) continue;
-
-          const parsed = splitTitleAuthors(cell);
-          const talk = make("div", "talk");
-          talk.innerHTML = `
-            <div class="talk-time">${time}</div>
-            ${isTalkCode(code) ? `<div class="talk-code">#${code}</div>` : ""}
-            <div class="talk-title">${parsed.title}</div>
-            ${parsed.authors ? `<div class="talk-authors">${parsed.authors}</div>` : ""}
-          `;
-          roomObj.talksEl.appendChild(talk);
-        }
-      }
-    }
-
-    if (!app.innerHTML.trim()) {
+    if (!programmeDays.length) {
       app.className = "error";
       app.textContent = t("error");
+      return;
     }
+
+    if (activeDayIndex >= programmeDays.length) activeDayIndex = 0;
+    render();
   } catch (e) {
     app.className = "error";
     app.textContent = t("error");
   }
 }
 
+function render() {
+  document.getElementById("eyebrow").textContent = t("eyebrow");
+  document.getElementById("pageTitle").textContent = t("title");
+
+  renderDayButtons();
+
+  const day = programmeDays[activeDayIndex];
+  document.getElementById("pageSubtitle").textContent = formatDate(day.date);
+  renderStats(day);
+
+  const app = document.getElementById("app");
+  app.className = "timeline";
+  app.innerHTML = day.blocks.map(renderBlock).join("");
+}
+
 function setLanguage(lang) {
   currentLang = lang;
   document.getElementById("btn-it").classList.toggle("active", lang === "it");
   document.getElementById("btn-en").classList.toggle("active", lang === "en");
-  document.getElementById("pageTitle").textContent = t("title");
-  load();
+  loadProgramme();
 }
 
 document.getElementById("btn-it").addEventListener("click", () => setLanguage("it"));
 document.getElementById("btn-en").addEventListener("click", () => setLanguage("en"));
 
-load();
-setInterval(load, 300000);
+document.getElementById("prevDay").addEventListener("click", () => {
+  if (!programmeDays.length) return;
+  activeDayIndex = Math.max(0, activeDayIndex - 1);
+  render();
+});
+
+document.getElementById("nextDay").addEventListener("click", () => {
+  if (!programmeDays.length) return;
+  activeDayIndex = Math.min(programmeDays.length - 1, activeDayIndex + 1);
+  render();
+});
+
+loadProgramme();
+setInterval(loadProgramme, 300000);
 </script>
 </body>
 </html>
