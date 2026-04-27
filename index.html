@@ -1,3 +1,341 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Programma AIUCD</title>
+
+<style>
+  :root {
+    --bg: #f5f6fa;
+    --card: #ffffff;
+    --text: #1d2433;
+    --muted: #677089;
+    --line: #e6e9f0;
+    --accent: #2047d2;
+    --accent-soft: #edf2ff;
+    --ok: #0a7d48;
+    --warn: #8f5b00;
+    --social: #6943d0;
+    --shadow: 0 6px 20px rgba(0,0,0,0.05);
+    --radius: 18px;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+  }
+
+  .wrap {
+    max-width: 1200px;
+    margin: auto;
+    padding: 20px;
+  }
+
+  .toolbar {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 12px;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+
+  .titlebox, .langbox {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 14px 16px;
+  }
+
+  .eyebrow {
+    color: var(--muted);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    margin-bottom: 6px;
+  }
+
+  h1 {
+    margin: 0;
+    font-size: 28px;
+    line-height: 1.1;
+  }
+
+  .sub {
+    margin-top: 6px;
+    color: var(--muted);
+    font-size: 14px;
+  }
+
+  .lang-toggle {
+    display: flex;
+    gap: 8px;
+  }
+
+  .lang-toggle button,
+  .day-btn,
+  .nav-btn {
+    appearance: none;
+    border: 1px solid var(--line);
+    background: #fff;
+    color: var(--text);
+    border-radius: 999px;
+    padding: 10px 14px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .lang-toggle button.active,
+  .day-btn.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+
+  .day-nav {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 18px;
+  }
+
+  .day-buttons {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .stats {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+  }
+
+  .pill {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 10px 14px;
+    font-size: 13px;
+    color: var(--muted);
+    box-shadow: var(--shadow);
+  }
+
+  .pill strong { color: var(--text); }
+
+  .timeline {
+    display: grid;
+    gap: 16px;
+  }
+
+  .block {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 24px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+
+  .block-head {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    align-items: flex-start;
+    padding: 18px 20px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .time {
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  .type {
+    display: inline-block;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--accent);
+    background: var(--accent-soft);
+    border-radius: 999px;
+    padding: 6px 10px;
+  }
+
+  .type.break {
+    background: #fff5e7;
+    color: var(--warn);
+  }
+
+  .type.plenary {
+    background: #ebf9f1;
+    color: var(--ok);
+  }
+
+  .type.social {
+    background: #f4efff;
+    color: var(--social);
+  }
+
+  .block-title {
+    margin: 10px 0 0;
+    font-size: 22px;
+    line-height: 1.25;
+  }
+
+  .location {
+    margin-top: 8px;
+    font-size: 14px;
+    color: var(--muted);
+    font-weight: 600;
+    white-space: pre-line;
+  }
+
+  .parallel {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 14px;
+    padding: 18px 20px 20px;
+  }
+
+  .room-card {
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 14px;
+    background: #fcfdff;
+  }
+
+  .room-meta {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    align-items: baseline;
+    margin-bottom: 10px;
+  }
+
+  .room-name {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    color: var(--muted);
+    font-weight: 700;
+  }
+
+  .session-code {
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--accent);
+  }
+
+  .session-title {
+    margin: 0 0 6px;
+    font-size: 18px;
+    line-height: 1.3;
+  }
+
+  .chair-line {
+    margin: 0 0 12px;
+    font-size: 10px;
+    line-height: 1.3;
+    color: var(--muted);
+    opacity: 0.9;
+  }
+
+  .talks {
+    display: grid;
+    gap: 10px;
+  }
+
+  .talk {
+    border-top: 1px dashed #dfe4ee;
+    padding-top: 10px;
+  }
+
+  .talk:first-child {
+    border-top: 0;
+    padding-top: 0;
+  }
+
+  .talk-time {
+    font-size: 12px;
+    color: var(--muted);
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+
+  .talk-code {
+    font-size: 12px;
+    color: var(--accent);
+    font-weight: 800;
+    margin-bottom: 4px;
+  }
+
+  .talk-title {
+    font-weight: 700;
+    line-height: 1.35;
+    margin-bottom: 4px;
+  }
+
+  .talk-authors {
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.4;
+  }
+
+  .loading, .error {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    padding: 18px;
+    box-shadow: var(--shadow);
+    color: var(--muted);
+  }
+
+  @media (max-width: 860px) {
+    .toolbar { grid-template-columns: 1fr; }
+    .block-head { flex-direction: column; }
+    .day-nav { grid-template-columns: 1fr; }
+    .day-buttons { justify-content: flex-start; }
+  }
+</style>
+</head>
+
+<body>
+<div class="wrap">
+  <div class="toolbar">
+    <div class="titlebox">
+      <div class="eyebrow" id="eyebrow">Programma</div>
+      <h1 id="pageTitle">Programma AIUCD Cagliari 2026</h1>
+      <div class="sub" id="pageSubtitle"></div>
+    </div>
+
+    <div class="langbox">
+      <div class="eyebrow">Language</div>
+      <div class="lang-toggle">
+        <button id="btn-it" class="active">IT</button>
+        <button id="btn-en">EN</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="day-nav">
+    <button class="nav-btn" id="prevDay">←</button>
+    <div class="day-buttons" id="dayButtons"></div>
+    <button class="nav-btn" id="nextDay">→</button>
+  </div>
+
+  <div class="stats" id="stats"></div>
+
+  <div id="app" class="loading">Caricamento...</div>
+</div>
+
 <script>
 const CONFIG = {
   csvUrl: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRHVLopLKXErqwt8YOQBbUOTcYa7xNH7HmyT85pZpgQPQ88V7eYZFEY5IQ8T7uxMBH_dHsIF3wULWyY/pub?gid=352682787&single=true&output=csv",
@@ -111,14 +449,10 @@ function isDateCell(v) {
 function normalizeTime(v) {
   const s = compact(v);
   if (!s) return "";
-
   let m = s.match(/^(\d{1,2}:\d{2})\s*[-–]\s*(\d{1,2}:\d{2})$/);
   if (m) return `${m[1]}–${m[2]}`;
-
-  // tollera 15:20:15:40
   m = s.match(/^(\d{1,2}:\d{2}):(\d{1,2}:\d{2})$/);
   if (m) return `${m[1]}–${m[2]}`;
-
   return s;
 }
 
@@ -190,6 +524,7 @@ function deriveColumnLocations(headerRow) {
     if (value) return value;
     if (idx === 0) return "Data";
     if (idx === 1) return "Orario";
+    if (idx === 2) return CONFIG.fallbackLocation;
     return "";
   });
 }
@@ -220,7 +555,7 @@ function buildProgramme(rows) {
     currentParallel = null;
   }
 
-  function pushGeneralBlock(date, time, title, cols) {
+  function pushGeneralBlock(time, title, cols) {
     currentParallel = null;
     currentDay.blocks.push({
       type: classifyGeneral(title),
@@ -240,16 +575,13 @@ function buildProgramme(rows) {
 
     if (isDateCell(dateCell)) {
       lastDate = dateCell;
-      if (!currentDay || currentDay.date !== dateCell) {
-        startDay(dateCell);
-      }
+      if (!currentDay || currentDay.date !== dateCell) startDay(dateCell);
     } else if (!currentDay && lastDate) {
       startDay(lastDate);
     }
 
     if (!currentDay) continue;
 
-    // colonne dopo C: coppie codice/testo
     const pairStarts = [];
     for (let i = 3; i < r.length; i += 2) pairStarts.push(i);
 
@@ -258,17 +590,16 @@ function buildProgramme(rows) {
       if (compact(r[i])) nonEmptyCols.push(i);
     }
 
-    const hasPairContent = pairStarts.some(i => compact(r[i]) || compact(r[i + 1]));
-
-    // 1) evento generale in colonna C
-    if (general && !hasPairContent) {
-      pushGeneralBlock(currentDay.date, time, general, [2]);
+    // 1) attività generale in colonna C
+    const hasPairData = pairStarts.some(i => compact(r[i]) || compact(r[i + 1]));
+    if (general && !hasPairData) {
+      pushGeneralBlock(time, general, [2]);
       continue;
     }
 
-    // 2) nuova riga di sessioni parallele
-    const sessionStarts = pairStarts.filter(i => isSessionCode(r[i]));
-    if (sessionStarts.length) {
+    // 2) inizio nuova sessione parallela
+    const sessionPairs = pairStarts.filter(i => isSessionCode(r[i]));
+    if (sessionPairs.length > 0) {
       currentParallel = {
         type: "parallel",
         time,
@@ -276,7 +607,7 @@ function buildProgramme(rows) {
         rooms: []
       };
 
-      for (const i of sessionStarts) {
+      for (const i of sessionPairs) {
         const sessionCode = compact(r[i] || "");
         const sessionTitle = clean(r[i + 1] || "");
         currentParallel.rooms.push({
@@ -293,39 +624,34 @@ function buildProgramme(rows) {
       continue;
     }
 
-    // 3) riga chair
-    // nel tuo foglio i "Chair" stanno nella colonna codice della coppia
+    // 3) chair row
     if (currentParallel) {
-      const looksLikeChairRow = currentParallel.rooms.some(room => {
-        const marker = compact(r[room.pairIndex] || "");
-        const text = clean(r[room.pairIndex + 1] || "");
-        return isChairMarker(marker) || isChairMarker(text);
-      });
+      const hasChairMarkers = currentParallel.rooms.some(room =>
+        isChairMarker(r[room.pairIndex]) || isChairMarker(r[room.pairIndex + 1])
+      );
 
-      if (looksLikeChairRow) {
+      if (hasChairMarkers) {
         for (const room of currentParallel.rooms) {
-          const marker = compact(r[room.pairIndex] || "");
-          const text = clean(r[room.pairIndex + 1] || "");
+          const left = compact(r[room.pairIndex] || "");
+          const right = clean(r[room.pairIndex + 1] || "");
 
-          if (isChairMarker(marker) && text) {
-            room.chair = text.replace(/^chair\s*:?\s*/i, "").trim();
-          } else if (isChairMarker(text)) {
-            room.chair = text.replace(/^chair\s*:?\s*/i, "").trim();
-          } else if (isChairMarker(marker) && !text) {
-            room.chair = "";
+          if (isChairMarker(left) && right) {
+            room.chair = right.replace(/^chair\s*:?\s*/i, "").trim();
+          } else if (isChairMarker(right)) {
+            room.chair = right.replace(/^chair\s*:?\s*/i, "").trim();
           }
         }
         continue;
       }
     }
 
-    // 4) riga dibattito
+    // 4) discussion row
     if (currentParallel) {
-      const looksLikeDiscussionRow = currentParallel.rooms.some(room =>
+      const hasDiscussion = currentParallel.rooms.some(room =>
         isDiscussion(r[room.pairIndex + 1] || "")
       );
 
-      if (looksLikeDiscussionRow) {
+      if (hasDiscussion) {
         for (const room of currentParallel.rooms) {
           const text = clean(r[room.pairIndex + 1] || "");
           if (isDiscussion(text)) {
@@ -341,16 +667,16 @@ function buildProgramme(rows) {
       }
     }
 
-    // 5) riga talk normali
+    // 5) talk row
     if (currentParallel) {
-      let consumedTalkRow = false;
+      let hasTalkData = false;
 
       for (const room of currentParallel.rooms) {
         const code = compact(r[room.pairIndex] || "");
         const text = clean(r[room.pairIndex + 1] || "");
 
         if (!code && !text) continue;
-        consumedTalkRow = true;
+        hasTalkData = true;
 
         if (!text) continue;
 
@@ -363,19 +689,19 @@ function buildProgramme(rows) {
         });
       }
 
-      if (consumedTalkRow) continue;
+      if (hasTalkData) continue;
     }
 
-    // 6) fallback per plenarie/pause replicate su più colonne
+    // 6) fallback per pause/plenarie replicate su più colonne
     if (nonEmptyCols.length) {
-      const allTexts = nonEmptyCols
+      const fallbackTexts = nonEmptyCols
         .filter(i => i >= 2)
         .map(i => clean(r[i]))
         .filter(Boolean);
 
-      if (allTexts.length) {
-        const title = general || allTexts[0];
-        pushGeneralBlock(currentDay.date, time, title, nonEmptyCols);
+      if (fallbackTexts.length) {
+        const title = general || fallbackTexts[0];
+        pushGeneralBlock(time, title, nonEmptyCols);
       }
     }
   }
