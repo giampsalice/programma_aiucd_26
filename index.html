@@ -449,10 +449,13 @@ function isDateCell(v) {
 function normalizeTime(v) {
   const s = compact(v);
   if (!s) return "";
+
   let m = s.match(/^(\d{1,2}:\d{2})\s*[-–]\s*(\d{1,2}:\d{2})$/);
   if (m) return `${m[1]}–${m[2]}`;
+
   m = s.match(/^(\d{1,2}:\d{2}):(\d{1,2}:\d{2})$/);
   if (m) return `${m[1]}–${m[2]}`;
+
   return s;
 }
 
@@ -519,19 +522,39 @@ function uniqueNonEmpty(values) {
 }
 
 function deriveColumnLocations(headerRow) {
-  return headerRow.map((cell, idx) => {
-    const value = clean(cell);
-    if (value) return value;
-    if (idx === 0) return "Data";
-    if (idx === 1) return "Orario";
-    if (idx === 2) return CONFIG.fallbackLocation;
-    return "";
+  const locations = new Array(headerRow.length).fill("");
+
+  locations[0] = "Data";
+  locations[1] = "Orario";
+
+  // Solo le colonne che contengono davvero i nomi degli spazi
+  const officialLocationColumns = [2, 4, 6, 8, 9, 10]; // C, E, G, I, J, K
+
+  officialLocationColumns.forEach(idx => {
+    locations[idx] = clean(headerRow[idx] || "");
   });
+
+  return locations;
 }
 
 function resolveLocationFromColumns(columnIndices, columnLocations) {
-  const labels = uniqueNonEmpty(columnIndices.map(i => columnLocations[i] || ""))
-    .filter(v => !/^(data|orario)$/i.test(v));
+  const mapped = [];
+
+  for (const i of columnIndices) {
+    let sourceIndex = i;
+
+    if (i === 3 || i === 4) sourceIndex = 4;       // D/E -> E
+    else if (i === 5 || i === 6) sourceIndex = 6;  // F/G -> G
+    else if (i === 7 || i === 8) sourceIndex = 8;  // H/I -> I
+    else if (i === 9) sourceIndex = 9;             // J -> J
+    else if (i === 10) sourceIndex = 10;           // K -> K
+    else if (i === 2) sourceIndex = 2;             // C -> C
+
+    const label = clean(columnLocations[sourceIndex] || "");
+    if (label) mapped.push(label);
+  }
+
+  const labels = [...new Set(mapped)].filter(v => !/^(data|orario)$/i.test(v));
   return labels.join("\n") || CONFIG.fallbackLocation;
 }
 
@@ -590,14 +613,15 @@ function buildProgramme(rows) {
       if (compact(r[i])) nonEmptyCols.push(i);
     }
 
-    // 1) attività generale in colonna C
     const hasPairData = pairStarts.some(i => compact(r[i]) || compact(r[i + 1]));
+
+    // Attività generale in colonna C
     if (general && !hasPairData) {
       pushGeneralBlock(time, general, [2]);
       continue;
     }
 
-    // 2) inizio nuova sessione parallela
+    // Inizio nuova sessione parallela
     const sessionPairs = pairStarts.filter(i => isSessionCode(r[i]));
     if (sessionPairs.length > 0) {
       currentParallel = {
@@ -624,7 +648,7 @@ function buildProgramme(rows) {
       continue;
     }
 
-    // 3) chair row
+    // Riga chair
     if (currentParallel) {
       const hasChairMarkers = currentParallel.rooms.some(room =>
         isChairMarker(r[room.pairIndex]) || isChairMarker(r[room.pairIndex + 1])
@@ -645,7 +669,7 @@ function buildProgramme(rows) {
       }
     }
 
-    // 4) discussion row
+    // Riga dibattito
     if (currentParallel) {
       const hasDiscussion = currentParallel.rooms.some(room =>
         isDiscussion(r[room.pairIndex + 1] || "")
@@ -667,7 +691,7 @@ function buildProgramme(rows) {
       }
     }
 
-    // 5) talk row
+    // Riga talk
     if (currentParallel) {
       let hasTalkData = false;
 
@@ -692,7 +716,7 @@ function buildProgramme(rows) {
       if (hasTalkData) continue;
     }
 
-    // 6) fallback per pause/plenarie replicate su più colonne
+    // Fallback per pause/plenarie replicate su più colonne
     if (nonEmptyCols.length) {
       const fallbackTexts = nonEmptyCols
         .filter(i => i >= 2)
@@ -870,3 +894,5 @@ document.getElementById("nextDay").addEventListener("click", () => {
 loadProgramme();
 setInterval(loadProgramme, 300000);
 </script>
+</body>
+</html>
