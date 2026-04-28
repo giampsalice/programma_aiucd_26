@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Persone / Schede</title>
+
+<style>
+:root {
+  --bg:#f6f7fb;
+  --card:#ffffff;
+  --text:#1d2433;
+  --muted:#677089;
+  --line:#e3e8f2;
+  --accent:#2047d2;
+  --shadow:0 8px 24px rgba(16,24,40,.08);
+}
+
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+}
+
+.wrap{
+  max-width:1200px;
+  margin:auto;
+  padding:24px;
+}
+
+.toolbar{
+  display:grid;
+  grid-template-columns:2fr 1fr 1fr;
+  gap:12px;
+  margin-bottom:20px;
+}
+
+.panel{
+  background:white;
+  border:1px solid var(--line);
+  border-radius:16px;
+  padding:12px;
+}
+
+input,select{
+  width:100%;
+  padding:10px;
+  border-radius:10px;
+  border:1px solid var(--line);
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+  gap:16px;
+}
+
+.card{
+  background:white;
+  border-radius:18px;
+  overflow:hidden;
+  box-shadow:var(--shadow);
+  display:flex;
+  flex-direction:column;
+}
+
+.image{
+  height:180px;
+  background:#eee;
+}
+
+.image img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+
+.content{
+  padding:14px;
+}
+
+.name{
+  font-weight:700;
+  font-size:18px;
+}
+
+.role{
+  color:var(--accent);
+  font-weight:600;
+}
+
+.meta{
+  font-size:14px;
+  color:var(--muted);
+}
+
+.button{
+  display:inline-block;
+  margin-top:10px;
+  padding:8px 12px;
+  background:var(--accent);
+  color:white;
+  border-radius:999px;
+  text-decoration:none;
+}
+
+.loading,.error{
+  background:white;
+  padding:20px;
+  border-radius:16px;
+}
+</style>
+</head>
+
+<body>
+<div class="wrap">
+
+<div class="toolbar">
+  <div class="panel">
+    <input id="search" placeholder="Cerca..." />
+  </div>
+
+  <div class="panel">
+    <select id="dept"></select>
+  </div>
+
+  <div class="panel">
+    <select id="area"></select>
+  </div>
+</div>
+
+<div id="app" class="loading">Caricamento...</div>
+
+</div>
+
+<script>
+
+const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTXzXVD97NxAGmhibLmX3OkOIf7pH7ybu3VmChRQAM5MCaCC3aj-NADoG1cv2yNSL9IUItRzYmcmCyP/pub?gid=0&single=true&output=csv";
+
+const COL = {
+  name:1,
+  role:2,
+  dept:3,
+  area:4,
+  page:9,
+  image:10
+};
+
+let data=[];
+let filtered=[];
+
+function parseCSV(text){
+  const rows=[];
+  let row=[],val="",q=false;
+
+  for(let i=0;i<text.length;i++){
+    const c=text[i],n=text[i+1];
+    if(c=='"'){
+      if(q && n=='"'){val+='"';i++;}
+      else q=!q;
+    } else if(c==','&&!q){
+      row.push(val);val="";
+    } else if((c=='\n'||c=='\r')&&!q){
+      if(c=='\r'&&n=='\n')i++;
+      row.push(val);
+      rows.push(row);
+      row=[];val="";
+    } else val+=c;
+  }
+
+  if(val||row.length){row.push(val);rows.push(row);}
+  return rows.map(r=>r.map(c=>c.trim()));
+}
+
+function clean(v){return (v||"").trim();}
+function url(v){return /^https?:\/\//.test(v)?v:"";}
+
+function rowToObj(r){
+  if(!r[COL.name]) return null;
+  return {
+    name:clean(r[COL.name]),
+    role:clean(r[COL.role]),
+    dept:clean(r[COL.dept]),
+    area:clean(r[COL.area]),
+    page:url(r[COL.page]),
+    image:url(r[COL.image])
+  };
+}
+
+async function load(){
+  const res=await fetch(CSV_URL+"&t="+Date.now());
+  const txt=await res.text();
+  const rows=parseCSV(txt);
+
+  data=rows.slice(1).map(rowToObj).filter(Boolean);
+
+  buildFilters();
+  apply();
+}
+
+function buildFilters(){
+  const dept=document.getElementById("dept");
+  const area=document.getElementById("area");
+
+  const depts=[...new Set(data.map(x=>x.dept).filter(Boolean))];
+  const areas=[...new Set(data.map(x=>x.area).filter(Boolean))];
+
+  dept.innerHTML='<option value="">Dipartimento</option>'+depts.map(x=>`<option>${x}</option>`).join("");
+  area.innerHTML='<option value="">Ambito</option>'+areas.map(x=>`<option>${x}</option>`).join("");
+}
+
+function apply(){
+  const q=document.getElementById("search").value.toLowerCase();
+  const d=document.getElementById("dept").value;
+  const a=document.getElementById("area").value;
+
+  filtered=data.filter(x=>{
+    return (!q|| (x.name+x.role+x.dept+x.area).toLowerCase().includes(q))
+    &&(!d||x.dept===d)
+    &&(!a||x.area===a);
+  });
+
+  render();
+}
+
+function render(){
+  const app=document.getElementById("app");
+
+  if(!filtered.length){
+    app.className="error";
+    app.textContent="Nessun risultato";
+    return;
+  }
+
+  app.className="grid";
+  app.innerHTML=filtered.map(x=>`
+    <div class="card">
+      <div class="image">
+        ${x.image?`<img src="${x.image}">`:``}
+      </div>
+      <div class="content">
+        <div class="name">${x.name}</div>
+        <div class="role">${x.role}</div>
+        <div class="meta">${x.dept}</div>
+        <div class="meta">${x.area}</div>
+        ${x.page?`<a class="button" href="${x.page}" target="_blank">Scheda</a>`:""}
+      </div>
+    </div>
+  `).join("");
+}
+
+document.getElementById("search").addEventListener("input",apply);
+document.getElementById("dept").addEventListener("change",apply);
+document.getElementById("area").addEventListener("change",apply);
+
+load();
+setInterval(load,300000);
+
+</script>
+</body>
+</html>
