@@ -13,6 +13,7 @@
       --muted:#677089;
       --line:#e3e8f2;
       --accent:#2047d2;
+      --accent-soft:#edf2ff;
       --shadow:0 8px 24px rgba(16,24,40,.08);
       --radius:18px;
     }
@@ -91,6 +92,99 @@
       color:#fff;
     }
 
+    .featured-wrap {
+      display:grid;
+      gap:14px;
+      margin-bottom:24px;
+    }
+
+    .featured-header {
+      background:linear-gradient(135deg, #eff4ff 0%, #ffffff 100%);
+      border:1px solid var(--line);
+      border-radius:24px;
+      box-shadow:var(--shadow);
+      padding:20px;
+    }
+
+    .featured-title {
+      margin:0;
+      font-size:24px;
+      line-height:1.2;
+    }
+
+    .featured-subtitle {
+      margin-top:8px;
+      color:var(--muted);
+      font-size:14px;
+      line-height:1.5;
+    }
+
+    .featured-grid {
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
+      gap:18px;
+    }
+
+    .featured-card {
+      background:var(--card);
+      border:2px solid var(--accent);
+      border-radius:22px;
+      box-shadow:var(--shadow);
+      overflow:hidden;
+      display:flex;
+      flex-direction:column;
+      min-height:100%;
+    }
+
+    .featured-card .image-wrap {
+      aspect-ratio: 5 / 3;
+    }
+
+    .featured-card .content {
+      padding:18px;
+    }
+
+    .featured-card .name {
+      font-size:22px;
+    }
+
+    .featured-card .role {
+      font-size:16px;
+    }
+
+    .badge-row {
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      margin-top:2px;
+      margin-bottom:2px;
+    }
+
+    .badge {
+      display:inline-flex;
+      align-items:center;
+      border-radius:999px;
+      padding:6px 10px;
+      font-size:12px;
+      font-weight:700;
+      letter-spacing:.02em;
+      border:1px solid var(--line);
+      background:#fff;
+      color:var(--text);
+    }
+
+    .badge-director {
+      background:var(--accent);
+      color:#fff;
+      border-color:var(--accent);
+    }
+
+    .badge-coordinator {
+      background:var(--accent-soft);
+      color:var(--accent);
+      border-color:#cfdcff;
+    }
+
     .toolbar {
       display:grid;
       grid-template-columns:2fr 1fr 1fr auto;
@@ -138,6 +232,12 @@
 
     .pill strong {
       color:var(--text);
+    }
+
+    .section-title {
+      margin:0 0 14px;
+      font-size:22px;
+      line-height:1.2;
     }
 
     .grid {
@@ -312,6 +412,8 @@
       </div>
     </div>
 
+    <div id="featuredSection" class="featured-wrap"></div>
+
     <div class="toolbar">
       <div class="panel">
         <div class="eyebrow" id="searchLabel">Cerca</div>
@@ -334,6 +436,8 @@
       </div>
     </div>
 
+    <h2 class="section-title" id="allPeopleTitle"></h2>
+
     <div id="app" class="loading">Caricamento...</div>
 
     <div class="pagination-wrap">
@@ -347,12 +451,13 @@
       refreshMs: 300000
     };
 
-    // B=1, C=2, D=3, E=4, J=9, K=10
+    // B=1, C=2, D=3, E=4, G=6, J=9, K=10
     const COL = {
       name: 1,
       role: 2,
       dept: 3,
       area: 4,
+      special: 6,
       pageUrl: 9,
       imageUrl: 10
     };
@@ -360,6 +465,7 @@
     let currentLang = "it";
     let allItems = [];
     let filteredItems = [];
+    let featuredItems = [];
     let currentPage = 1;
     const ITEMS_PER_PAGE = 12;
 
@@ -387,7 +493,12 @@
         noImage: "Immagine non disponibile",
         prev: "Precedente",
         next: "Successiva",
-        page: "Pagina"
+        featuredTitle: "Direzione e coordinamento",
+        featuredSubtitle: "Figure di riferimento evidenziate in cima alla directory.",
+        director: "Direttore",
+        coordinator: "Coordinatore",
+        specialRole: "Incarico",
+        allPeopleTitle: "Tutte le persone"
       },
       en: {
         eyebrow: "Directory",
@@ -412,7 +523,12 @@
         noImage: "Image not available",
         prev: "Previous",
         next: "Next",
-        page: "Page"
+        featuredTitle: "Leadership and coordination",
+        featuredSubtitle: "Key roles highlighted at the top of the directory.",
+        director: "Director",
+        coordinator: "Coordinator",
+        specialRole: "Role",
+        allPeopleTitle: "All people"
       }
     };
 
@@ -474,12 +590,28 @@
         role: clean(row[COL.role]),
         dept: clean(row[COL.dept]),
         area: clean(row[COL.area]),
+        special: clean(row[COL.special]),
         pageUrl: validUrl(row[COL.pageUrl]),
         imageUrl: validUrl(row[COL.imageUrl])
       };
 
       if (!item.name) return null;
       return item;
+    }
+
+    function getSpecialType(value) {
+      const s = clean(value).toLowerCase();
+      if (!s) return "";
+      if (s.includes("direttore")) return "director";
+      if (s.includes("coordinatore")) return "coordinator";
+      return "special";
+    }
+
+    function getSpecialPriority(item) {
+      const type = getSpecialType(item.special);
+      if (type === "director") return 0;
+      if (type === "coordinator") return 1;
+      return 2;
     }
 
     async function fetchData() {
@@ -541,26 +673,98 @@
       `;
     }
 
-    function renderCards(items) {
-      const app = document.getElementById("app");
+    function getBadgeHtml(item) {
+      const type = getSpecialType(item.special);
+      if (!type) return "";
+
+      if (type === "director") {
+        return `<span class="badge badge-director">${t("director")}</span>`;
+      }
+
+      if (type === "coordinator") {
+        return `<span class="badge badge-coordinator">${t("coordinator")}</span>`;
+      }
+
+      return `<span class="badge">${escapeHtml(item.special)}</span>`;
+    }
+
+    function renderFeaturedCard(item) {
+      return `
+        <article class="featured-card">
+          <div class="image-wrap">
+            ${item.imageUrl
+              ? `<img src="${escapeHtml(item.imageUrl)}" alt="${escapeHtml(item.name)}" loading="lazy" />`
+              : `<div class="placeholder">${t("noImage")}</div>`
+            }
+          </div>
+
+          <div class="content">
+            <div class="badge-row">
+              ${getBadgeHtml(item)}
+            </div>
+
+            <h2 class="name">${escapeHtml(item.name)}</h2>
+
+            ${item.role ? `<p class="role">${escapeHtml(item.role)}</p>` : ""}
+
+            ${item.special ? `
+              <div class="meta-item">
+                <div class="meta-label">${t("specialRole")}</div>
+                <div class="meta-value">${escapeHtml(item.special)}</div>
+              </div>
+            ` : ""}
+
+            <div class="meta">
+              ${item.dept ? `
+                <div class="meta-item">
+                  <div class="meta-label">${t("dept")}</div>
+                  <div class="meta-value">${escapeHtml(item.dept)}</div>
+                </div>
+              ` : ""}
+
+              ${item.area ? `
+                <div class="meta-item">
+                  <div class="meta-label">${t("area")}</div>
+                  <div class="meta-value">${escapeHtml(item.area)}</div>
+                </div>
+              ` : ""}
+            </div>
+
+            ${item.pageUrl ? `
+              <div class="actions">
+                <a class="button" href="${escapeHtml(item.pageUrl)}" target="_blank" rel="noopener noreferrer">
+                  ${t("openPage")}
+                </a>
+              </div>
+            ` : ""}
+          </div>
+        </article>
+      `;
+    }
+
+    function renderFeaturedSection(items) {
+      const box = document.getElementById("featuredSection");
 
       if (!items.length) {
-        app.className = "empty";
-        app.textContent = t("empty");
-        renderPagination(0);
+        box.innerHTML = "";
         return;
       }
 
-      const totalPages = Math.ceil(items.length / ITEMS_PER_PAGE);
-      if (currentPage > totalPages) currentPage = totalPages;
-      if (currentPage < 1) currentPage = 1;
+      box.innerHTML = `
+        <div class="featured-header">
+          <div class="eyebrow">${t("featuredTitle")}</div>
+          <h2 class="featured-title">${t("featuredTitle")}</h2>
+          <div class="featured-subtitle">${t("featuredSubtitle")}</div>
+        </div>
 
-      const start = (currentPage - 1) * ITEMS_PER_PAGE;
-      const end = start + ITEMS_PER_PAGE;
-      const pageItems = items.slice(start, end);
+        <div class="featured-grid">
+          ${items.map(renderFeaturedCard).join("")}
+        </div>
+      `;
+    }
 
-      app.className = "grid";
-      app.innerHTML = pageItems.map(item => `
+    function renderNormalCard(item) {
+      return `
         <article class="card">
           <div class="image-wrap">
             ${item.imageUrl
@@ -606,7 +810,29 @@
             ` : ""}
           </div>
         </article>
-      `).join("");
+      `;
+    }
+
+    function renderCards(items) {
+      const app = document.getElementById("app");
+
+      if (!items.length) {
+        app.className = "empty";
+        app.textContent = t("empty");
+        renderPagination(0);
+        return;
+      }
+
+      const totalPages = Math.ceil(items.length / ITEMS_PER_PAGE);
+      if (currentPage > totalPages) currentPage = totalPages;
+      if (currentPage < 1) currentPage = 1;
+
+      const start = (currentPage - 1) * ITEMS_PER_PAGE;
+      const end = start + ITEMS_PER_PAGE;
+      const pageItems = items.slice(start, end);
+
+      app.className = "grid";
+      app.innerHTML = pageItems.map(renderNormalCard).join("");
 
       renderPagination(totalPages);
     }
@@ -658,12 +884,13 @@
       const dept = clean(document.getElementById("deptFilter").value);
       const area = clean(document.getElementById("areaFilter").value);
 
-      filteredItems = allItems.filter(item => {
+      const matches = allItems.filter(item => {
         const haystack = [
           item.name,
           item.role,
           item.dept,
-          item.area
+          item.area,
+          item.special
         ].join(" ").toLowerCase();
 
         const matchesSearch = !q || haystack.includes(q);
@@ -673,8 +900,20 @@
         return matchesSearch && matchesDept && matchesArea;
       });
 
+      featuredItems = matches
+        .filter(item => getSpecialType(item.special))
+        .sort((a, b) => {
+          const pa = getSpecialPriority(a);
+          const pb = getSpecialPriority(b);
+          if (pa !== pb) return pa - pb;
+          return a.name.localeCompare(b.name, "it", { sensitivity: "base" });
+        });
+
+      filteredItems = matches.filter(item => !getSpecialType(item.special));
+
       currentPage = 1;
       renderStats();
+      renderFeaturedSection(featuredItems);
       renderCards(filteredItems);
     }
 
@@ -687,6 +926,7 @@
       document.getElementById("deptLabel").textContent = t("deptLabel");
       document.getElementById("areaLabel").textContent = t("areaLabel");
       document.getElementById("searchInput").placeholder = t("searchPlaceholder");
+      document.getElementById("allPeopleTitle").textContent = t("allPeopleTitle");
     }
 
     async function load() {
