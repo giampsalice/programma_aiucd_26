@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Directory persone</title>
+  <title>Persone / Schede</title>
 
   <style>
     :root {
@@ -251,6 +251,42 @@
       color:var(--muted);
     }
 
+    .pagination-wrap{
+      display:flex;
+      justify-content:center;
+      margin-top:24px;
+    }
+
+    .pagination{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      align-items:center;
+      justify-content:center;
+    }
+
+    .pagination button{
+      appearance:none;
+      border:1px solid var(--line);
+      background:#fff;
+      color:var(--text);
+      border-radius:999px;
+      padding:10px 14px;
+      font-weight:600;
+      cursor:pointer;
+    }
+
+    .pagination button.active{
+      background:var(--accent);
+      border-color:var(--accent);
+      color:#fff;
+    }
+
+    .pagination button:disabled{
+      opacity:.45;
+      cursor:not-allowed;
+    }
+
     @media (max-width:980px) {
       .toolbar {
         grid-template-columns:1fr;
@@ -299,6 +335,10 @@
     </div>
 
     <div id="app" class="loading">Caricamento...</div>
+
+    <div class="pagination-wrap">
+      <div id="pagination" class="pagination"></div>
+    </div>
   </div>
 
   <script>
@@ -320,6 +360,8 @@
     let currentLang = "it";
     let allItems = [];
     let filteredItems = [];
+    let currentPage = 1;
+    const ITEMS_PER_PAGE = 12;
 
     const UI = {
       it: {
@@ -342,7 +384,10 @@
         dept: "Dipartimento",
         area: "Ambito",
         openPage: "Pagina istituzionale",
-        noImage: "Immagine non disponibile"
+        noImage: "Immagine non disponibile",
+        prev: "Precedente",
+        next: "Successiva",
+        page: "Pagina"
       },
       en: {
         eyebrow: "Directory",
@@ -364,7 +409,10 @@
         dept: "Department",
         area: "Area",
         openPage: "Institutional page",
-        noImage: "Image not available"
+        noImage: "Image not available",
+        prev: "Previous",
+        next: "Next",
+        page: "Page"
       }
     };
 
@@ -499,11 +547,20 @@
       if (!items.length) {
         app.className = "empty";
         app.textContent = t("empty");
+        renderPagination(0);
         return;
       }
 
+      const totalPages = Math.ceil(items.length / ITEMS_PER_PAGE);
+      if (currentPage > totalPages) currentPage = totalPages;
+      if (currentPage < 1) currentPage = 1;
+
+      const start = (currentPage - 1) * ITEMS_PER_PAGE;
+      const end = start + ITEMS_PER_PAGE;
+      const pageItems = items.slice(start, end);
+
       app.className = "grid";
-      app.innerHTML = items.map(item => `
+      app.innerHTML = pageItems.map(item => `
         <article class="card">
           <div class="image-wrap">
             ${item.imageUrl
@@ -550,6 +607,50 @@
           </div>
         </article>
       `).join("");
+
+      renderPagination(totalPages);
+    }
+
+    function renderPagination(totalPages) {
+      const box = document.getElementById("pagination");
+      if (!box) return;
+
+      if (!totalPages || totalPages <= 1) {
+        box.innerHTML = "";
+        return;
+      }
+
+      let html = `
+        <button ${currentPage === 1 ? "disabled" : ""} data-page="${currentPage - 1}">
+          ${t("prev")}
+        </button>
+      `;
+
+      for (let p = 1; p <= totalPages; p++) {
+        html += `
+          <button class="${p === currentPage ? "active" : ""}" data-page="${p}">
+            ${p}
+          </button>
+        `;
+      }
+
+      html += `
+        <button ${currentPage === totalPages ? "disabled" : ""} data-page="${currentPage + 1}">
+          ${t("next")}
+        </button>
+      `;
+
+      box.innerHTML = html;
+
+      box.querySelectorAll("[data-page]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const nextPage = Number(btn.dataset.page);
+          if (!nextPage || btn.disabled) return;
+          currentPage = nextPage;
+          renderCards(filteredItems);
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        });
+      });
     }
 
     function applyFilter() {
@@ -572,6 +673,7 @@
         return matchesSearch && matchesDept && matchesArea;
       });
 
+      currentPage = 1;
       renderStats();
       renderCards(filteredItems);
     }
